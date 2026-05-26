@@ -29,7 +29,8 @@ static NOTE_RE: LazyLock<Regex> =
 /// All colors use `var()` references to mdBook's CSS custom properties
 /// so the popover automatically adapts to the current theme (light, coal,
 /// navy, ayu, rust, or any custom theme).
-const POPOVER_CSS: &str = r#"<style>
+fn popover_css(popover_font_size: &str) -> String {
+    let css = r#"<style>
 .inplace-note-trigger {
   font-size: 0.75em;
   vertical-align: super;
@@ -59,7 +60,7 @@ const POPOVER_CSS: &str = r#"<style>
   max-width: 380px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
-  font-size: 1.6rem;
+  font-size: __POPOVER_FONT_SIZE__;
   font-weight: normal;
   line-height: 1.5;
   text-align: left;
@@ -108,7 +109,7 @@ const POPOVER_CSS: &str = r#"<style>
   max-width: 420px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
-  font-size: 1.6rem;
+  font-size: __POPOVER_FONT_SIZE__;
   font-weight: normal;
   line-height: 1.5;
   text-align: left;
@@ -193,6 +194,8 @@ const POPOVER_CSS: &str = r#"<style>
   background: var(--theme-popup-bg, var(--bg, #fff));
 }
 </style>"#;
+    css.replace("__POPOVER_FONT_SIZE__", popover_font_size)
+}
 
 pub fn make_app() -> Command {
     Command::new("inplace-note-preprocessor")
@@ -231,10 +234,11 @@ fn main() {
 }
 
 /// A pre-processor that expands `{{note: ...}}` markers into inline hover popovers.
-#[derive(Default)]
 pub struct InplaceNote {
     /// Whether to emit Markdown instead of HTML (for non-HTML backends).
     md_notes: bool,
+    /// Custom popover font-size (e.g. "80%", "1.4rem", "14px"). Defaults to "1.6rem".
+    popover_font_size: String,
 }
 
 impl InplaceNote {
@@ -265,7 +269,14 @@ impl InplaceNote {
             }
         }
 
-        Self { md_notes }
+        let popover_font_size = ctx
+            .config
+            .get::<String>("preprocessor.inplace-note.popover-font-size")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "1.6rem".to_string());
+
+        Self { md_notes, popover_font_size }
     }
 
     /// Indicate whether a renderer is supported.  Markdown mode can target any renderer.
@@ -310,7 +321,7 @@ impl Preprocessor for InplaceNote {
 
                 // Inject CSS before chapter content (only if HTML mode and notes exist).
                 if !self.md_notes && !notes.is_empty() {
-                    chap.content = format!("{POPOVER_CSS}\n{chap_content}", chap_content = chap.content);
+                    chap.content = format!("{css}\n{chap_content}", css = popover_css(&self.popover_font_size), chap_content = chap.content);
                 }
 
                 // In markdown mode, append note definitions at the end of the chapter.

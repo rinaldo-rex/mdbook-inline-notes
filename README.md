@@ -17,6 +17,7 @@ rendered markdown content.
 - **Pure CSS hover popovers** — no JavaScript required
 - **Auto-numbered superscript** markers (¹, ², ³…)
 - **Full markdown** in note content (bold, italic, code, lists, blockquotes, etc.)
+- **Theme-aware** — popover colors auto-adapt to the active mdBook theme (light, coal, navy, ayu, rust)
 - **Self-contained** — CSS is injected inline, no extra files needed
 - **Markdown fallback mode** — for non-HTML backends
 
@@ -51,6 +52,10 @@ Hover over the superscript number to see the popover.
 # Emit Markdown instead of HTML (for non-HTML renderers like the print backend).
 # Default: false
 markdown = false
+
+# Popover font size (any valid CSS value: "80%", "14px", "1.2rem", etc.)
+# Default: "1.6rem" (matches mdBook's body font size)
+popover-font-size = "1.6rem"
 ```
 
 ## How It Works

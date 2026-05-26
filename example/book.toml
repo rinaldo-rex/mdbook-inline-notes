@@ -5,3 +5,7 @@ src = "src"
 title = "Inplace Notes — Demo Book"
 
 [preprocessor.inplace-note]
+# Optional: set popover font size (default: "1.6rem").
+# Accepts any CSS font-size value: "80%", "14px", "1.2rem", etc.
+# popover-font-size = "80%"
+popover-font-size = "80%"
