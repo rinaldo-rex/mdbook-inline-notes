@@ -25,12 +25,16 @@ static NOTE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?s)\{\{note:\s*(?P<content>.*?)\}\}").unwrap());
 
 /// The CSS injected once per chapter when notes are present.
+///
+/// All colors use `var()` references to mdBook's CSS custom properties
+/// so the popover automatically adapts to the current theme (light, coal,
+/// navy, ayu, rust, or any custom theme).
 const POPOVER_CSS: &str = r#"<style>
 .inplace-note-trigger {
   font-size: 0.75em;
   vertical-align: super;
   line-height: 0;
-  color: #0969da;
+  color: var(--links, #0969da);
   font-weight: 600;
   cursor: help;
 }
@@ -46,8 +50,9 @@ const POPOVER_CSS: &str = r#"<style>
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
-  border: 1px solid #d0d7de;
+  background: var(--theme-popup-bg, var(--bg, #fff));
+  color: var(--fg, #000);
+  border: 1px solid var(--theme-popup-border, #d0d7de);
   border-radius: 8px;
   padding: 10px 14px;
   min-width: 200px;
@@ -68,7 +73,7 @@ const POPOVER_CSS: &str = r#"<style>
   left: 50%;
   transform: translateX(-50%);
   border: 7px solid transparent;
-  border-top-color: #ffffff;
+  border-top-color: var(--theme-popup-bg, var(--bg, #fff));
 }
 .inplace-note-inline .inplace-note-popover-inline::before {
   content: "";
@@ -77,7 +82,7 @@ const POPOVER_CSS: &str = r#"<style>
   left: 50%;
   transform: translateX(-50%);
   border: 8px solid transparent;
-  border-top-color: #d0d7de;
+  border-top-color: var(--theme-popup-border, #d0d7de);
 }
 .inplace-note-inline:hover .inplace-note-popover-inline {
   display: block;
@@ -94,8 +99,9 @@ const POPOVER_CSS: &str = r#"<style>
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
-  border: 1px solid #d0d7de;
+  background: var(--theme-popup-bg, var(--bg, #fff));
+  color: var(--fg, #000);
+  border: 1px solid var(--theme-popup-border, #d0d7de);
   border-radius: 8px;
   padding: 12px 16px;
   min-width: 240px;
@@ -116,7 +122,7 @@ const POPOVER_CSS: &str = r#"<style>
   left: 50%;
   transform: translateX(-50%);
   border: 7px solid transparent;
-  border-top-color: #ffffff;
+  border-top-color: var(--theme-popup-bg, var(--bg, #fff));
 }
 .inplace-note-block .inplace-note-popover-block::before {
   content: "";
@@ -125,12 +131,18 @@ const POPOVER_CSS: &str = r#"<style>
   left: 50%;
   transform: translateX(-50%);
   border: 8px solid transparent;
-  border-top-color: #d0d7de;
+  border-top-color: var(--theme-popup-border, #d0d7de);
 }
 .inplace-note-block:hover .inplace-note-popover-block {
   display: block;
 }
 /* Popover inner content styling */
+.inplace-note-content a {
+  color: var(--links, #0969da);
+}
+.inplace-note-content a:hover {
+  color: var(--links, #0969da);
+}
 .inplace-note-content p {
   margin: 0.25em 0;
 }
@@ -144,9 +156,14 @@ const POPOVER_CSS: &str = r#"<style>
   margin: 0.5em 0;
   padding: 8px 12px;
   font-size: 0.85em;
+  background: var(--quote-bg, #f6f8fa);
 }
 .inplace-note-content code {
   font-size: 0.9em;
+  color: var(--inline-code-color, #301900);
+}
+.inplace-note-content pre code {
+  color: var(--fg, #000);
 }
 .inplace-note-content ul,
 .inplace-note-content ol {
@@ -155,9 +172,9 @@ const POPOVER_CSS: &str = r#"<style>
 }
 .inplace-note-content blockquote {
   margin: 0.5em 0;
-  padding-left: 0.75em;
-  border-left: 3px solid #d0d7de;
-  color: #656d76;
+  padding: 0 0.75em;
+  border-left: 3px solid var(--theme-popup-border, #d0d7de);
+  color: var(--fg, #656d76);
 }
 .inplace-note-content table {
   margin: 0.5em 0;
@@ -167,10 +184,13 @@ const POPOVER_CSS: &str = r#"<style>
 .inplace-note-content th,
 .inplace-note-content td {
   padding: 4px 8px;
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--table-border-color, #d0d7de);
 }
 .inplace-note-content th {
-  background: #f6f8fa;
+  background: var(--table-header-bg, #f6f8fa);
+}
+.inplace-note-content td {
+  background: var(--theme-popup-bg, var(--bg, #fff));
 }
 </style>"#;
 
