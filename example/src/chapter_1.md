@@ -4,9 +4,7 @@ Welcome to the demo of **mdbook-inplace-notes**!
 
 ## Simple inline notes
 
-The `HashMap` type{{note: A hash map implemented with **quadratic probing** and
-**SIMD** lookup. See [std::collections](https://doc.rust-lang.org/std/collections/)
-for details.}} is Rust's standard key-value store.
+The `HashMap` type{{note: A hash map implemented with **quadratic probing** and **SIMD** lookup. See [std::collections](https://doc.rust-lang.org/std/collections/) for details.}} is Rust's standard key-value store.
 
 Here's a `Vec`{{note: A contiguous, growable array type, written `Vec<T>`. It
 allocates on the heap and provides O(1) indexing.}} — the most common collection.

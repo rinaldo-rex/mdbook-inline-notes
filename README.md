@@ -56,6 +56,14 @@ markdown = false
 # Popover font size (any valid CSS value: "80%", "14px", "1.2rem", etc.)
 # Default: "1.6rem" (matches mdBook's body font size)
 popover-font-size = "1.6rem"
+
+# Popover max-width (any valid CSS value: "500px", "40vw", "30rem", etc.)
+# Default: "380px"
+popover-max-width = "380px"
+
+# Popover min-width (any valid CSS value: "300px", "25vw", "20rem", etc.)
+# Default: "200px"
+popover-min-width = "200px"
 ```
 
 ## How It Works

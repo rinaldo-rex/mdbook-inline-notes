@@ -29,7 +29,7 @@ static NOTE_RE: LazyLock<Regex> =
 /// All colors use `var()` references to mdBook's CSS custom properties
 /// so the popover automatically adapts to the current theme (light, coal,
 /// navy, ayu, rust, or any custom theme).
-fn popover_css(popover_font_size: &str) -> String {
+fn popover_css(popover_font_size: &str, popover_max_width: &str, popover_min_width: &str) -> String {
     let css = r#"<style>
 .inplace-note-trigger {
   font-size: 0.75em;
@@ -56,8 +56,8 @@ fn popover_css(popover_font_size: &str) -> String {
   border: 1px solid var(--theme-popup-border, #d0d7de);
   border-radius: 8px;
   padding: 10px 14px;
-  min-width: 200px;
-  max-width: 380px;
+  min-width: __POPOVER_MIN_WIDTH__;
+  max-width: __POPOVER_MAX_WIDTH__;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
   font-size: __POPOVER_FONT_SIZE__;
@@ -105,8 +105,8 @@ fn popover_css(popover_font_size: &str) -> String {
   border: 1px solid var(--theme-popup-border, #d0d7de);
   border-radius: 8px;
   padding: 12px 16px;
-  min-width: 240px;
-  max-width: 420px;
+  min-width: __POPOVER_MIN_WIDTH__;
+  max-width: __POPOVER_MAX_WIDTH__;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
   font-size: __POPOVER_FONT_SIZE__;
@@ -195,6 +195,8 @@ fn popover_css(popover_font_size: &str) -> String {
 }
 </style>"#;
     css.replace("__POPOVER_FONT_SIZE__", popover_font_size)
+        .replace("__POPOVER_MAX_WIDTH__", popover_max_width)
+        .replace("__POPOVER_MIN_WIDTH__", popover_min_width)
 }
 
 pub fn make_app() -> Command {
@@ -239,6 +241,10 @@ pub struct InplaceNote {
     md_notes: bool,
     /// Custom popover font-size (e.g. "80%", "1.4rem", "14px"). Defaults to "1.6rem".
     popover_font_size: String,
+    /// Custom popover max-width (e.g. "500px", "40vw"). Defaults to "380px".
+    popover_max_width: String,
+    /// Custom popover min-width (e.g. "300px", "25vw"). Defaults to "200px".
+    popover_min_width: String,
 }
 
 impl InplaceNote {
@@ -276,7 +282,21 @@ impl InplaceNote {
             .flatten()
             .unwrap_or_else(|| "1.6rem".to_string());
 
-        Self { md_notes, popover_font_size }
+        let popover_max_width = ctx
+            .config
+            .get::<String>("preprocessor.inplace-note.popover-max-width")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "380px".to_string());
+
+        let popover_min_width = ctx
+            .config
+            .get::<String>("preprocessor.inplace-note.popover-min-width")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "200px".to_string());
+
+        Self { md_notes, popover_font_size, popover_max_width, popover_min_width }
     }
 
     /// Indicate whether a renderer is supported.  Markdown mode can target any renderer.
@@ -321,7 +341,7 @@ impl Preprocessor for InplaceNote {
 
                 // Inject CSS before chapter content (only if HTML mode and notes exist).
                 if !self.md_notes && !notes.is_empty() {
-                    chap.content = format!("{css}\n{chap_content}", css = popover_css(&self.popover_font_size), chap_content = chap.content);
+                    chap.content = format!("{css}\n{chap_content}", css = popover_css(&self.popover_font_size, &self.popover_max_width, &self.popover_min_width), chap_content = chap.content);
                 }
 
                 // In markdown mode, append note definitions at the end of the chapter.
@@ -497,5 +517,24 @@ mod tests {
     fn test_note_has_blocks_with_table() {
         let html = render_note_html("| a | b |\n|---|---|\n| 1 | 2 |");
         assert!(note_has_blocks(&html));
+    }
+
+    #[test]
+    fn test_popover_css_includes_font_size() {
+        let css = popover_css("14px", "500px", "300px");
+        assert!(css.contains("font-size: 14px;"), "font-size not injected: {css}");
+        assert!(css.contains("max-width: 500px;"), "max-width not injected: {css}");
+        assert!(css.contains("min-width: 300px;"), "min-width not injected: {css}");
+        // Must be scoped to popover selectors, not leak to page-level elements.
+        assert!(!css.contains("body"), "CSS should not style <body>");
+        assert!(!css.contains(".content {"), "CSS should not style .content");
+    }
+
+    #[test]
+    fn test_popover_css_defaults() {
+        let css = popover_css("1.6rem", "380px", "200px");
+        assert!(css.contains("font-size: 1.6rem;"));
+        assert!(css.contains("max-width: 380px;"));
+        assert!(css.contains("min-width: 200px;"));
     }
 }
