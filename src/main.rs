@@ -59,7 +59,7 @@ const POPOVER_CSS: &str = r#"<style>
   max-width: 380px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
-  font-size: 0.875rem;
+  font-size: 1.6rem;
   font-weight: normal;
   line-height: 1.5;
   text-align: left;
@@ -108,7 +108,7 @@ const POPOVER_CSS: &str = r#"<style>
   max-width: 420px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 1000;
-  font-size: 0.875rem;
+  font-size: 1.6rem;
   font-weight: normal;
   line-height: 1.5;
   text-align: left;
@@ -155,11 +155,11 @@ const POPOVER_CSS: &str = r#"<style>
 .inplace-note-content pre {
   margin: 0.5em 0;
   padding: 8px 12px;
-  font-size: 0.85em;
+  font-size: var(--code-font-size, 0.875em);
   background: var(--quote-bg, #f6f8fa);
 }
 .inplace-note-content code {
-  font-size: 0.9em;
+  font-size: var(--code-font-size, 0.875em);
   color: var(--inline-code-color, #301900);
 }
 .inplace-note-content pre code {
