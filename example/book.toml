@@ -1,0 +1,7 @@
+[book]
+authors = ["mdbook-inplace-notes"]
+language = "en"
+src = "src"
+title = "Inplace Notes — Demo Book"
+
+[preprocessor.inplace-note]

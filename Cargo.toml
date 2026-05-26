@@ -1,0 +1,22 @@
+[package]
+name = "mdbook-inplace-notes"
+version = "0.1.0"
+edition = "2021"
+description = "An mdbook preprocessor for inline notes with CSS hover popovers"
+license = "MIT"
+repository = "https://github.com/rinaldorex/mdbook-inplace-notes"
+keywords = ["mdbook", "notes", "popover", "preprocessor"]
+categories = ["text-processing"]
+
+[[bin]]
+name = "mdbook-inplace-note"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+env_logger = "0.11"
+log = "0.4"
+mdbook-preprocessor = "0.5"
+pulldown-cmark = "0.13"
+regex = "1"
+serde_json = "1"
