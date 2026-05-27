@@ -64,6 +64,10 @@ popover-max-width = "380px"
 # Popover min-width (any valid CSS value: "300px", "25vw", "20rem", etc.)
 # Default: "200px"
 popover-min-width = "200px"
+
+# Padding around the superscript number to enlarge the hover hit area.
+# Default: "6px". Accepts any CSS padding value: "8px", "0.35em", "4px 8px", etc.
+trigger-hit-padding = "6px"
 ```
 
 ## How It Works

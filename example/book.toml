@@ -16,3 +16,7 @@ popover-font-size = "80%"
 # Optional: set popover min-width (default: "200px").
 # Accepts any CSS width value: "300px", "25vw", "20rem", etc.
 popover-min-width = "300px"
+
+# Optional: padding around the superscript trigger to enlarge the hover hit area.
+# Default: "6px". Accepts any CSS padding value: "8px", "0.35em", "4px 8px", etc.
+trigger-hit-padding = "3px"

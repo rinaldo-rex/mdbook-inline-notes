@@ -29,20 +29,42 @@ static NOTE_RE: LazyLock<Regex> =
 /// All colors use `var()` references to mdBook's CSS custom properties
 /// so the popover automatically adapts to the current theme (light, coal,
 /// navy, ayu, rust, or any custom theme).
-fn popover_css(popover_font_size: &str, popover_max_width: &str, popover_min_width: &str) -> String {
+fn popover_css(
+    popover_font_size: &str,
+    popover_max_width: &str,
+    popover_min_width: &str,
+    trigger_hit_padding: &str,
+) -> String {
     let css = r#"<style>
 .inplace-note-trigger {
   font-size: 0.75em;
   vertical-align: super;
-  line-height: 0;
+  line-height: 1;
   color: var(--links, #0969da);
   font-weight: 600;
   cursor: help;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: __TRIGGER_HIT_PADDING__;
 }
 /* Inline wrapper — surrounds trigger in inline context */
 .inplace-note-inline {
   position: relative;
-  display: inline;
+  display: inline-block;
+  vertical-align: baseline;
+}
+/* Invisible hover bridge above trigger (matches popover gap) */
+.inplace-note-inline::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: 1.5em;
+  height: 10px;
 }
 /* Popover for inline-only notes (no block elements) */
 .inplace-note-inline .inplace-note-popover-inline {
@@ -197,6 +219,7 @@ fn popover_css(popover_font_size: &str, popover_max_width: &str, popover_min_wid
     css.replace("__POPOVER_FONT_SIZE__", popover_font_size)
         .replace("__POPOVER_MAX_WIDTH__", popover_max_width)
         .replace("__POPOVER_MIN_WIDTH__", popover_min_width)
+        .replace("__TRIGGER_HIT_PADDING__", trigger_hit_padding)
 }
 
 pub fn make_app() -> Command {
@@ -245,6 +268,8 @@ pub struct InplaceNote {
     popover_max_width: String,
     /// Custom popover min-width (e.g. "300px", "25vw"). Defaults to "200px".
     popover_min_width: String,
+    /// Padding around the superscript trigger to enlarge the hover hit area (e.g. "6px", "0.35em").
+    trigger_hit_padding: String,
 }
 
 impl InplaceNote {
@@ -296,7 +321,20 @@ impl InplaceNote {
             .flatten()
             .unwrap_or_else(|| "200px".to_string());
 
-        Self { md_notes, popover_font_size, popover_max_width, popover_min_width }
+        let trigger_hit_padding = ctx
+            .config
+            .get::<String>("preprocessor.inplace-note.trigger-hit-padding")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| "6px".to_string());
+
+        Self {
+            md_notes,
+            popover_font_size,
+            popover_max_width,
+            popover_min_width,
+            trigger_hit_padding,
+        }
     }
 
     /// Indicate whether a renderer is supported.  Markdown mode can target any renderer.
@@ -341,7 +379,16 @@ impl Preprocessor for InplaceNote {
 
                 // Inject CSS before chapter content (only if HTML mode and notes exist).
                 if !self.md_notes && !notes.is_empty() {
-                    chap.content = format!("{css}\n{chap_content}", css = popover_css(&self.popover_font_size, &self.popover_max_width, &self.popover_min_width), chap_content = chap.content);
+                    chap.content = format!(
+                        "{css}\n{chap_content}",
+                        css = popover_css(
+                            &self.popover_font_size,
+                            &self.popover_max_width,
+                            &self.popover_min_width,
+                            &self.trigger_hit_padding,
+                        ),
+                        chap_content = chap.content
+                    );
                 }
 
                 // In markdown mode, append note definitions at the end of the chapter.
@@ -521,10 +568,11 @@ mod tests {
 
     #[test]
     fn test_popover_css_includes_font_size() {
-        let css = popover_css("14px", "500px", "300px");
+        let css = popover_css("14px", "500px", "300px", "8px");
         assert!(css.contains("font-size: 14px;"), "font-size not injected: {css}");
         assert!(css.contains("max-width: 500px;"), "max-width not injected: {css}");
         assert!(css.contains("min-width: 300px;"), "min-width not injected: {css}");
+        assert!(css.contains("padding: 8px;"), "trigger hit padding not injected: {css}");
         // Must be scoped to popover selectors, not leak to page-level elements.
         assert!(!css.contains("body"), "CSS should not style <body>");
         assert!(!css.contains(".content {"), "CSS should not style .content");
@@ -532,9 +580,10 @@ mod tests {
 
     #[test]
     fn test_popover_css_defaults() {
-        let css = popover_css("1.6rem", "380px", "200px");
+        let css = popover_css("1.6rem", "380px", "200px", "6px");
         assert!(css.contains("font-size: 1.6rem;"));
         assert!(css.contains("max-width: 380px;"));
         assert!(css.contains("min-width: 200px;"));
+        assert!(css.contains("padding: 6px;"));
     }
 }
